@@ -12,7 +12,7 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         self.status = None
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sysloghost = host
-	self.syslogport = port
+        self.syslogport = port
         self.mode = mode
 
     def setServiceParent(self, parent):
@@ -46,14 +46,14 @@ class SyslogNotifier(base.StatusReceiverMultiService):
                 return
 
         blamelist = ", ".join(build.getResponsibleUsers())
-	if results == SUCCESS:
+        if results == SUCCESS:
             res = "success, good work %s!" % blamelist 
-	elif results == WARNINGS:
+        elif results == WARNINGS:
             res = "warnings, did you push bad stuff %s?" % blamelist
         else:
             res = "failure, did you push bad stuff %s?" % blamelist
 
-	hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot:"
+        hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot:"
         msg = "Build %s completed: %s" % (name, res)
 
         self.sock.sendto(hdr+msg, (self.sysloghost, self.syslogport))
