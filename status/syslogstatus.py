@@ -6,13 +6,14 @@ from time import strftime
 
 class SyslogNotifier(base.StatusReceiverMultiService):
 
-    def __init__(self, host="127.0.0.1", port=514):
+    def __init__(self, host="127.0.0.1", port=514, mode="all"):
         base.StatusReceiverMultiService.__init__(self)
         self.watched = []
         self.status = None
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sysloghost = host
 	self.syslogport = port
+        self.mode = mode
 
     def setServiceParent(self, parent):
         """
@@ -38,14 +39,21 @@ class SyslogNotifier(base.StatusReceiverMultiService):
     def buildFinished(self, name, build, results):
         # here is where we actually do something.
         builder = build.getBuilder()
-	if results == SUCCESS:
-            res = "success"
-	elif results == WARNINGS:
-            res = "warnings"
-        else:
-            res = "failure"
 
-	hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot: "
-        msg = "Build of %s on %s completed: %s" % (self.status.getProjectName(), build.getSlavename(), res)
+        if self.mode == "change":
+            prev = build.getPreviousBuild()
+            if prev and prev.getResults() == results:
+                return
+
+        blamelist = ", ".join(build.getResponsibleUsers())
+	if results == SUCCESS:
+            res = "success, good work %s!" % blamelist 
+	elif results == WARNINGS:
+            res = "warnings, did you push bad stuff %s?" % blamelist
+        else:
+            res = "failure, did you push bad stuff %s?" % blamelist
+
+	hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot:"
+        msg = "Build %s completed: %s" % (name, res)
 
         self.sock.sendto(hdr+msg, (self.sysloghost, self.syslogport))
