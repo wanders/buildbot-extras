@@ -3,6 +3,9 @@ import socket
 from buildbot.status.builder import FAILURE, SUCCESS, WARNINGS
 from time import strftime
 
+def messagify(prop):
+    (prop, oldval, newval, _) = prop
+    return "%s: %s->%s" % (prop, oldval, newval)
 
 class SyslogNotifier(base.StatusReceiverMultiService):
 
@@ -44,33 +47,98 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         changed = False
         proplist = []
         prev = build.getPreviousBuild()
+
+        if prev is not None:
+            prevresults = prev.getResults()
+        else:
+            prevresults = results
+ 
+        last_nonfailing = prev
+        while last_nonfailing and last_nonfailing.getResults() == FAILURE:
+            last_nonfailing = last_nonfailing.getPreviousBuild()
+
         if prev:
             if prev.getResults() != results:
                 changed = True
+
+        # Only look at properties on non-failing builds
+        if results != FAILURE and last_nonfailing:
             for prop in self.interesting_properties:
+                gooddir = 0
+                if prop[0] == '-':
+                    prop = prop[1:]
+                    gooddir = -1
+                elif prop[0] == '+':
+                    prop = prop[1:]
+                    gooddir = 1
+
                 try:
-                    if build.getProperty(prop) != prev.getProperty(prop):
-                        changed = True
-                        proplist.append("%s: %s->%s" % (prop, prev.getProperty(prop), build.getProperty(prop)))
+                    new = build.getProperty(prop)
+                    old = last_nonfailing.getProperty(prop)
                 except KeyError:
                     continue
+
+                if new != old:
+                    changed = True
+
+                    if gooddir:
+                        try:
+                            new = int(new)
+                            old = int(old)
+                        except:
+                            gooddir = 0
+
+                    good = None
+                    if gooddir == -1:
+                        good = (new < old)
+                    elif gooddir == 1:
+                        good = (new > old)
+
+                    proplist.append((prop, old, new, good))
+
         if self.mode == "change" and not changed:
             return
 
-        if proplist:
-            propmsg = " (%s)" % (", ".join(proplist))
-        else:
-            propmsg = ""
 
-        blamelist = ", ".join(build.getResponsibleUsers())
+        goodprops = [x for x in proplist if x[3] == True]
+        badprops = [x for x in proplist if x[3] == False]
+        otherprops = [x for x in proplist if x[3] is None]
+
+        blamelist = ",".join(build.getResponsibleUsers())
+
+
+        goodwork = True
+
+        msg = "Build %s completed:" % name
         if results == SUCCESS:
-            res = "success, good work %s!" % blamelist 
+            msg += " SUCCESS"
         elif results == WARNINGS:
-            res = "warnings, did you push bad stuff %s?" % blamelist
-        else:
-            res = "failure, did you push bad stuff %s?" % blamelist
+            goodwork = (prevresults == FAILURE)
+            msg += " WARNINGS"
+        elif results == FAILURE:
+            goodwork = False
+            msg += " FAILURE"
 
-        hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot:"
-        msg = "Build %s completed: %s%s" % (name, res, propmsg)
+        if badprops:
+            goodwork = False
+
+
+        if goodwork:
+            if goodprops:
+                msg += "+(%s)" % (", ".join(map(messagify, goodprops)))
+            msg += ", good work %s" % blamelist
+        else:
+            if badprops:
+                msg += "+(%s)" % (", ".join(map(messagify, badprops)))
+            msg += ", did you push bad stuff %s?" % blamelist
+            otherprops += goodprops
+        print otherprops
+
+        if otherprops:
+            msg += " (also changed: %s)" % (", ".join(map(messagify, otherprops)))
+
+
+        hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot: "
+        msg = "Build %s completed: %s" % (name, msg)
 
         self.sock.sendto(hdr+msg, (self.sysloghost, self.syslogport))
