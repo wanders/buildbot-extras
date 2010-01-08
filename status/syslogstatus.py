@@ -113,7 +113,7 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         if results == SUCCESS:
             msg += " SUCCESS"
         elif results == WARNINGS:
-            goodwork = (prevresults == FAILURE)
+            goodwork = (prevresults != SUCCESS)
             msg += " WARNINGS"
         elif results == FAILURE:
             goodwork = False
