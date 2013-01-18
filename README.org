@@ -1,0 +1,3 @@
+* Buildbot-extras
+
+Collection of random more or less useful additions to buildbot.
