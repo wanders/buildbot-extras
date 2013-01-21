@@ -27,9 +27,10 @@
 
 from buildbot.steps.shell import SetProperty
 
+
 class ShowProperty(SetProperty):
     def getText(self, cmd, results):
         if self.property_changes:
-            return [ "%s: %s" % x for x in self.property_changes.items()]
+            return ["%s: %s" % x for x in self.property_changes.items()]
         else:
-            return [ "no change" ]
+            return ["no change"]
