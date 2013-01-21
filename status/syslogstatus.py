@@ -28,9 +28,31 @@ def messagify(prop):
     (prop, oldval, newval, _) = prop
     return "%s: %s->%s" % (prop, oldval, newval)
 
+
+def get_previous_with_same(build, prop):
+    prev = build.getPreviousBuild()
+    if prop is None:
+        return prev
+
+    try:
+        propval = build.getProperty(prop)
+    except:
+        propval = None
+
+    while prev:
+        try:
+            if prev.getProperty(prop) == propval:
+                return prev
+        except:
+            if propval is None:
+                return prev
+        prev = prev.getPreviousBuild()
+    return None
+
+
 class SyslogNotifier(base.StatusReceiverMultiService):
 
-    def __init__(self, host="127.0.0.1", port=514, mode="all", interesting_properties=[]):
+    def __init__(self, host="127.0.0.1", port=514, mode="all", interesting_properties=[], same_property=None):
         base.StatusReceiverMultiService.__init__(self)
         self.watched = []
         self.status = None
@@ -39,6 +61,7 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         self.syslogport = port
         self.mode = mode
         self.interesting_properties = interesting_properties
+        self.same_property = same_property
 
     def setServiceParent(self, parent):
         """
@@ -67,16 +90,16 @@ class SyslogNotifier(base.StatusReceiverMultiService):
 
         changed = False
         proplist = []
-        prev = build.getPreviousBuild()
+        prev = get_previous_with_same(build, self.same_property)
 
         if prev is not None:
             prevresults = prev.getResults()
         else:
             prevresults = results
- 
+
         last_nonfailing = prev
         while last_nonfailing and last_nonfailing.getResults() == FAILURE:
-            last_nonfailing = last_nonfailing.getPreviousBuild()
+            last_nonfailing = get_previous_with_same(last_nonfailing, self.same_property)
 
         if prev:
             if prev.getResults() != results:
