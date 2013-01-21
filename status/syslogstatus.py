@@ -24,6 +24,7 @@ import socket
 from buildbot.status.builder import FAILURE, SUCCESS, WARNINGS, Results
 from time import strftime
 
+
 def messagify(prop):
     (prop, oldval, newval, _) = prop
     return "%s: %s->%s" % (prop, oldval, newval)
@@ -83,7 +84,7 @@ class SyslogNotifier(base.StatusReceiverMultiService):
 
     def builderAdded(self, name, builder):
         self.watched.append(builder)
-        return self # subscribe to this builder
+        return self  # subscribe to this builder
 
     def buildFinished(self, name, build, results):
         # here is where we actually do something.
@@ -144,13 +145,11 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         if self.mode == "change" and not changed:
             return
 
-
-        goodprops = [x for x in proplist if x[3] == True]
-        badprops = [x for x in proplist if x[3] == False]
+        goodprops = [x for x in proplist if x[3] is True]
+        badprops = [x for x in proplist if x[3] is False]
         otherprops = [x for x in proplist if x[3] is None]
 
         blamelist = ",".join(build.getResponsibleUsers())
-
 
         goodwork = True
 
@@ -169,7 +168,6 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         if badprops:
             goodwork = False
 
-
         if goodwork:
             if goodprops:
                 msg += "+(%s)" % (", ".join(map(messagify, goodprops)))
@@ -183,7 +181,6 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         if otherprops:
             msg += " (also changed: %s)" % (", ".join(map(messagify, otherprops)))
 
+        hdr = "<1>" + strftime("%b %e %H:%M:%S") + " " + socket.gethostname() + " buildbot: "
 
-        hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot: "
-
-        self.sock.sendto(hdr+msg, (self.sysloghost, self.syslogport))
+        self.sock.sendto(hdr + msg, (self.sysloghost, self.syslogport))
