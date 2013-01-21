@@ -88,8 +88,6 @@ class SyslogNotifier(base.StatusReceiverMultiService):
 
     def buildFinished(self, name, build, results):
         # here is where we actually do something.
-        builder = build.getBuilder()
-
         changed = False
         proplist = []
         prev = get_previous_with_same(build, self.same_property)
