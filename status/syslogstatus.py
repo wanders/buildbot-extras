@@ -52,7 +52,7 @@ def get_previous_with_same(build, prop):
 
 class SyslogNotifier(base.StatusReceiverMultiService):
 
-    def __init__(self, host="127.0.0.1", port=514, mode="all", interesting_properties=[], same_property=None):
+    def __init__(self, host="127.0.0.1", port=514, mode="all", interesting_properties=[], same_property=None, buildid_property="branch"):
         base.StatusReceiverMultiService.__init__(self)
         self.watched = []
         self.status = None
@@ -62,6 +62,7 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         self.mode = mode
         self.interesting_properties = interesting_properties
         self.same_property = same_property
+        self.buildid_property = buildid_property
 
     def setServiceParent(self, parent):
         """
@@ -153,7 +154,12 @@ class SyslogNotifier(base.StatusReceiverMultiService):
 
         goodwork = True
 
-        msg = "Build %s%s completed: " % name
+        try:
+            buildid = "#" + str(build.getProperty(self.buildid_property))
+        except KeyError:
+            buildid = ""
+
+        msg = "Build %s%s completed: " % (name, buildid)
         msg += Results[results].upper()
         if results == WARNINGS:
             goodwork = (prevresults != SUCCESS)
