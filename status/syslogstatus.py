@@ -153,7 +153,6 @@ class SyslogNotifier(base.StatusReceiverMultiService):
                 msg += "+(%s)" % (", ".join(map(messagify, badprops)))
             msg += ", did you push bad stuff %s?" % blamelist
             otherprops += goodprops
-        print otherprops
 
         if otherprops:
             msg += " (also changed: %s)" % (", ".join(map(messagify, otherprops)))
