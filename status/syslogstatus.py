@@ -21,7 +21,7 @@
 
 from buildbot.status import base
 import socket
-from buildbot.status.builder import FAILURE, SUCCESS, WARNINGS
+from buildbot.status.builder import FAILURE, SUCCESS, WARNINGS, Results
 from time import strftime
 
 def messagify(prop):
@@ -153,15 +153,12 @@ class SyslogNotifier(base.StatusReceiverMultiService):
 
         goodwork = True
 
-        msg = "Build %s completed:" % name
-        if results == SUCCESS:
-            msg += " SUCCESS"
-        elif results == WARNINGS:
+        msg = "Build %s%s completed: " % name
+        msg += Results[results].upper()
+        if results == WARNINGS:
             goodwork = (prevresults != SUCCESS)
-            msg += " WARNINGS"
         elif results == FAILURE:
             goodwork = False
-            msg += " FAILURE"
 
         if badprops:
             goodwork = False
@@ -182,6 +179,5 @@ class SyslogNotifier(base.StatusReceiverMultiService):
 
 
         hdr = "<1>"+strftime("%b %e %H:%M:%S")+" "+socket.gethostname()+" buildbot: "
-        msg = "Build %s completed: %s" % (name, msg)
 
         self.sock.sendto(hdr+msg, (self.sysloghost, self.syslogport))
