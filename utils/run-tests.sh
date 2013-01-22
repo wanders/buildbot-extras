@@ -11,12 +11,14 @@ cd "$utildir"
 
 srcdir=$(cd ..; pwd)
 
-if [[ ! -d "$srcdir/utils/tests/$testname" ]]; then
+testdir=$srcdir/utils/tests/$testname
+
+if [[ ! -d "$testdir" ]]; then
 	echo "Couldn't find test named '$testname'"
 	exit 1
 fi
 
-export PYTHONPATH="$srcdir/status:$srcdir/steps:$srcdir/utils/tests/$testname"
+export PYTHONPATH="$srcdir/status:$srcdir/steps:$testdir"
 
 basedir=$(mktemp --tmpdir -d bbtests.XXXXXXXXXXX)
 
