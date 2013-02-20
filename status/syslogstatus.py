@@ -104,6 +104,10 @@ class SyslogNotifier(base.StatusReceiverMultiService):
         if prev:
             if prev.getResults() != results:
                 changed = True
+        else:
+            # Always log initial pushes that causes failures
+            if results != SUCCESS:
+                changed = True
 
         # Only look at properties on non-failing builds
         if results != FAILURE and last_nonfailing:
