@@ -22,6 +22,7 @@
 import os
 import re
 
+from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import ShellCommand
 
 
@@ -89,11 +90,16 @@ class _CoverityCommit(ShellCommand):
                 break
 
 
-def CoverityCommit(coverityPath, reportDir, stream, baseDir, locks=None):
+def CoverityCommit(coverityPath, reportDir, stream, baseDir, locks=None, desc=None):
     command = [os.path.join(coverityPath, "cov-commit-defects"),
                "--dir", reportDir,
                "--stream", stream,
                "--strip-path", baseDir]
+
+    if desc is None:
+        desc = WithProperties("BuildBot commit from %(buildername)s build number %(buildnumber)s")
+    command += ["--description", desc]
+
     if locks:
         return _CoverityCommit(command=command, locks=locks)
     else:
