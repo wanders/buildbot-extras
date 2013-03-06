@@ -27,6 +27,7 @@ from buildbot.steps.shell import ShellCommand
 
 
 class _CoverityAnalyze(ShellCommand):
+    name = "coverityanalyze"
     def describe(self, done=False):
         if done:
             return ["Coverity", "analyse"]
@@ -46,6 +47,7 @@ def CoverityAnalyze(coverityPath, reportDir, disable=None, usermodel=None):
 
 
 class _CoverityReport(ShellCommand):
+    name = "coverityreport"
     def describe(self, done=False):
         if done:
             return ["Coverity", "reporting"]
@@ -76,6 +78,7 @@ def CoverityReport(coverityPath, reportDir):
 
 
 class _CoverityCommit(ShellCommand):
+    name = "coveritycommit"
     def describe(self, done=False):
         if done:
             return ["Coverity", "committing"]
