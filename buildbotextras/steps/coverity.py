@@ -38,8 +38,14 @@ def CoverityAnalyze(coverityPath, reportDir, disable=None, usermodel=None):
     command = [os.path.join(coverityPath, "cov-analyze"),
                "--dir", reportDir,
                "--all", "--enable-constraint-fpp", "--enable-callgraph-metrics"]
+
     if disable is not None:
-        command.extend(["--disable", disable])
+        if isinstance(disable, list):
+            for d in disable:
+                command.extend(["--disable", d])
+        else:
+            command.extend(["--disable", disable])
+
     if usermodel is not None:
         command.extend(["--user-model-file", usermodel])
 
