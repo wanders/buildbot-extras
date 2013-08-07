@@ -34,7 +34,7 @@ class _CoverityAnalyze(ShellCommand):
         return ["Coverity", "analysing"]
 
 
-def CoverityAnalyze(coverityPath, reportDir, disable=None, usermodel=None):
+def CoverityAnalyze(coverityPath, reportDir, disable=None, usermodel=None, extra_args=[]):
     command = [os.path.join(coverityPath, "cov-analyze"),
                "--dir", reportDir,
                "--all", "--enable-constraint-fpp", "--enable-callgraph-metrics"]
@@ -48,6 +48,8 @@ def CoverityAnalyze(coverityPath, reportDir, disable=None, usermodel=None):
 
     if usermodel is not None:
         command.extend(["--user-model-file", usermodel])
+
+    command.extend(extra_args)
 
     return _CoverityAnalyze(command=command)
 
