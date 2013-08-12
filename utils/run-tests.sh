@@ -46,11 +46,12 @@ tail -F "$basedir/master/twistd.log" "$basedir/slave/twistd.log" &
 
 sleep 2
 
-for x in {1..20}; do
-    buildbot sendchange --master=127.0.0.1:9989 --who=test file.foo
-    sleep 2
-done
-
+if ! test -f "$testdir/no_changes"; then
+	for x in {1..20}; do
+		buildbot sendchange --master=127.0.0.1:9989 --who=test file.foo
+		sleep 2
+	done
+fi
 
 
 # wait for ctrl-c of tail..
