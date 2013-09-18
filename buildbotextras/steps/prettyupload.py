@@ -29,7 +29,7 @@ class PrettyUpload(FileUpload):
     name = 'prettyupload'
 
     def finished(self, result):
-        mdest = self.build.getProperties().render(self.masterdest)
+        mdest = self.masterdest
 
         ext = mdest[-3:]
         bname = mdest.split("/")[-1]
