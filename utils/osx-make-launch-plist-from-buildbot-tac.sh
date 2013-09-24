@@ -3,7 +3,7 @@
 set -e
 
 # grab config from buildbot.tac, somewhat hackish and unsafe
-eval $(sed -n '/^\([a-z]*\) = [^(]*$/{s/ = /=/;p;}' buildbot.tac)
+eval $(sed -n '/^\([a-z]*\) = [^(]*$/{s/ = r\{0,1\}/=/;p;}' buildbot.tac)
 
 label="net.sourceforge.buildbot.slave.$slavename.plist"
 
