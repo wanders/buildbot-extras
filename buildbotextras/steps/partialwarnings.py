@@ -36,44 +36,6 @@ class PartialWarningsCompile(Compile):
         self.addFactoryArguments(partialwarningEnd=self.partialwarningEnd)
         self.addFactoryArguments(partialwarningProperty=self.partialwarningProperty)
 
-    def describe(self, done=False):
-        ret = []
-        properties = self.build.getProperties()
-
-        if done and self.descriptionDone is not None:
-            for words in list(self.descriptionDone):
-                if isinstance(words, (str, unicode)):
-                    words = words.split()
-                words = properties.render(words)
-                if isinstance(words, list):
-                    ret.extend(words)
-                else:
-                    ret.append(words)
-            return ret
-        if self.description is not None:
-            for words in list(self.description):
-                if isinstance(words, (str, unicode)):
-                    words = words.split()
-                words = properties.render(words)
-                if isinstance(words, list):
-                    ret.extend(words)
-                else:
-                    ret.append(words)
-            return ret
-
-        words = self.command
-        if isinstance(words, (str, unicode)):
-            words = words.split()
-        # render() each word to handle WithProperties objects
-        words = properties.render(words)
-        if len(words) < 1:
-            return ["???"]
-        if len(words) == 1:
-            return ["'%s'" % words[0]]
-        if len(words) == 2:
-            return ["'%s" % words[0], "%s'" % words[1]]
-        return ["'%s" % words[0], "%s" % words[1], "...'"]
-
     def createSummary(self, log):
         Compile.createSummary(self, log)
 
