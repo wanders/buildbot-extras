@@ -29,18 +29,19 @@ class PrettyUpload(FileUpload):
     name = 'prettyupload'
 
     def finished(self, result):
-        mdest = self.masterdest
+        if self.cmd and not self.cmd.didFail():
+            mdest = self.masterdest
+            ext = mdest[-3:]
+            bname = mdest.split("/")[-1]
 
-        ext = mdest[-3:]
-        bname = mdest.split("/")[-1]
-
-        if mdest.startswith(PUB_PREFIX):
-            reldest = mdest[len(PUB_PREFIX):]
-            if ext in IMAGE_FORMATS:
-                l = '<a href="/%s"><img src="/%s"></a>' % (reldest, reldest)
+            if mdest.startswith(PUB_PREFIX):
+                reldest = mdest[len(PUB_PREFIX):]
+                if ext in IMAGE_FORMATS:
+                    l = ['<a href="/%s"><img src="/%s"></a>' % (reldest, reldest)]
+                else:
+                    l = []
+                    self.addURL(reldest, bname)
             else:
-                l = '<a href="/%s">%s</a>' % (reldest, bname)
-        else:
-            l = bname
-        self.step_status.setText(['uploaded', l])
+                l = [bname]
+            self.step_status.setText(['Uploaded'] + l)
         return FileUpload.finished(self, result)

@@ -6,11 +6,16 @@ def conf(c):
     pass
 
 def factory(f):
-    f.addStep(PrettyUpload('/etc/motd',
-                           masterdest='public_html/motd.txt'))
+    f.addStep(PrettyUpload('/thisfile/does/not/exist',
+                           masterdest='public_html/eexist.txt',
+                           haltOnFailure=False))
+
+    f.addStep(PrettyUpload('/etc/debian_version',
+                           masterdest='public_html/debian_version.txt',
+                           flunkOnFailure=True))
 
     f.addStep(PrettyUpload('/usr/share/pixmaps/debian-logo.png',
                            masterdest=WithProperties('public_html/logo-%(buildnumber)s.png')))
 
-    f.addStep(PrettyUpload('/etc/motd',
-                           masterdest='motd.txt'))
+    f.addStep(PrettyUpload('/etc/debian_version',
+                           masterdest='debian_version.txt'))
