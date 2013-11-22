@@ -40,7 +40,7 @@ class PrettyUpload(FileUpload):
                     l = ['<a href="/%s"><img src="/%s"></a>' % (reldest, reldest)]
                 else:
                     l = []
-                    self.addURL(reldest, bname)
+                    self.addURL(bname, "/" + reldest)
             else:
                 l = [bname]
             self.step_status.setText(['Uploaded'] + l)
