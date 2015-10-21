@@ -20,6 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from buildbot.steps.transfer import FileUpload
+from buildbot.status.builder import SUCCESS
 
 IMAGE_FORMATS = ('png', 'jpg', 'svg')
 PUB_PREFIX = "public_html/"
@@ -29,7 +30,7 @@ class PrettyUpload(FileUpload):
     name = 'prettyupload'
 
     def finished(self, result):
-        if self.cmd and not self.cmd.didFail():
+        if result == SUCCESS:
             mdest = self.masterdest
             ext = mdest[-3:]
             bname = mdest.split("/")[-1]
